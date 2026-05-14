@@ -1,19 +1,3 @@
-## Screenshots
-
-Here are some screenshots of PDF-X in action:
-
-![Screenshot 1](src/assets/Screenshots/screenshot1.png)
-![Screenshot 2](src/assets/Screenshots/screenshot2.png)
-![Screenshot 3](src/assets/Screenshots/screenshot3.png)
-![Screenshot 4](src/assets/Screenshots/screenshot4.png)
-## Screenshots
-
-Here are some screenshots of PDF-X in action:
-
-![Screenshot 1](src/assets/Screenshots/screenshot1.png)
-![Screenshot 2](src/assets/Screenshots/screenshot2.png)
-![Screenshot 3](src/assets/Screenshots/screenshot3.png)
-![Screenshot 4](src/assets/Screenshots/screenshot4.png)
 # PDF-X
 
 A modern web application for working with PDF files. Built with React, Vite, and Tailwind CSS, PDF-X provides a full suite of tools for manipulating, converting, and securing PDF documents directly in your browser — no downloads or installations required.
@@ -29,6 +13,13 @@ A modern web application for working with PDF files. Built with React, Vite, and
 - **PDF Security** — Add password protection and permissions to your PDFs.
 - **Split PDF** — Divide a PDF into multiple documents.
 - **File Dropzone** — Easily upload files with drag-and-drop support.
+
+## Screenshots
+
+![Screenshot 1](src/assets/Screenshots/screenshot1.png)
+![Screenshot 2](src/assets/Screenshots/screenshot2.png)
+![Screenshot 3](src/assets/Screenshots/screenshot3.png)
+![Screenshot 4](src/assets/Screenshots/screenshot4.png)
 
 ## Getting Started
 
