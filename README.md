@@ -16,10 +16,10 @@ A modern web application for working with PDF files. Built with React, Vite, and
 
 ## Screenshots
 
-![Screenshot 1](public/Screenshots/screenshot1.png)
-![Screenshot 2](public/Screenshots/screenshot2.png)
-![Screenshot 3](public/Screenshots/screenshot3.png)
-![Screenshot 4](public/Screenshots/screenshot4.png)
+![Screenshot 1](assets/Screenshots/screenshot1.png)
+![Screenshot 2](assets/Screenshots/screenshot2.png)
+![Screenshot 3](assets/Screenshots/screenshot3.png)
+![Screenshot 4](assets/Screenshots/screenshot4.png)
 
 ## Getting Started
 
