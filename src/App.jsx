@@ -86,6 +86,10 @@ export default function App() {
           </button>
         </div>
 
+        {isSidebarOpen && (
+          <div className="lg:hidden fixed inset-0 bg-black/40 z-40" onClick={() => setSidebarOpen(false)} />
+        )}
+
         <motion.aside 
           layout
           initial={false}
@@ -95,7 +99,8 @@ export default function App() {
           }}
           transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           className={cn(
-            "glass z-40 flex flex-col fixed lg:relative h-full transition-transform lg:translate-x-0 border-r border-white/20 dark:border-white/5",
+            "z-50 flex flex-col fixed lg:relative left-2 right-2 top-16 bottom-4 lg:left-0 lg:right-auto lg:top-0 lg:bottom-0 lg:h-full transition-transform lg:translate-x-0 border-r border-white/20 dark:border-white/5 rounded-lg lg:rounded-none overflow-hidden",
+            isSidebarOpen ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-md lg:bg-transparent lg:backdrop-blur-none" : "bg-transparent",
             !isSidebarOpen && "lg:translate-x-0 -translate-x-full lg:w-[72px]"
           )}
         >
@@ -115,12 +120,22 @@ export default function App() {
                 </motion.h1>
               )}
             </div>
-            <button 
-              onClick={() => setSidebarOpen(!isSidebarOpen)}
-              className="hidden lg:block p-1.5 text-slate-400 hover:text-accent hover:bg-accent/5 rounded-lg transition-all"
-            >
-              {isSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
-            </button>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setSidebarOpen(!isSidebarOpen)}
+                className="hidden lg:block p-1.5 text-slate-400 hover:text-accent hover:bg-accent/5 rounded-lg transition-all"
+              >
+                {isSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+              </button>
+
+              <button 
+                onClick={() => setSidebarOpen(!isSidebarOpen)}
+                className="lg:hidden p-1.5 text-slate-400 hover:text-accent hover:bg-accent/5 rounded-lg transition-all"
+                aria-label="Close sidebar"
+              >
+                {isSidebarOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+              </button>
+            </div>
           </div>
 
           <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto scrollbar-hide">
@@ -141,7 +156,7 @@ export default function App() {
                     className="absolute left-0 w-1 h-6 bg-accent rounded-r-full"
                   />
                 )}
-                <tool.icon size={20} className={cn(activeTool === tool.id ? "text-accent" : tool.color)} />
+                <tool.icon size={isSidebarOpen ? 20 : 26} className={cn(activeTool === tool.id ? "text-accent" : tool.color, "shrink-0")} />
                 {isSidebarOpen && (
                   <motion.span layout className="flex-1 text-left text-sm whitespace-nowrap">{tool.name}</motion.span>
                 )}
