@@ -1,3 +1,6 @@
+## Collaborators
+
+- [Joshua-Veve](https://github.com/Joshua-Veve)
 # React + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
@@ -45,29 +48,13 @@ pdf-x-web-app/
 │   ├── App.jsx
 │   ├── components/
 │   ├── assets/
-│   │   └── Screenshots/
-│   ├── services/
-│   ├── utils/
 │   └── ...
-├── package.json
 ├── tailwind.config.js
 ├── vite.config.js
 ├── README.md
 └── ...
 ```
 
-## Screenshots
-
-App screenshots:
-
-![Screenshot 1](src/assets/Screenshots/screenshot1.png)
-![Screenshot 2](src/assets/Screenshots/screenshot2.png)
-![Screenshot 3](src/assets/Screenshots/screenshot3.png)
-![Screenshot 4](src/assets/Screenshots/screenshot4.png)
-
-## Socials
-
-If you have any questions, you can reach me here:
 
 - **Instagram:** [@.benjamin.a.](https://instagram.com/.benjamin.a.)
 - **GitHub:** [Benjaminax](https://github.com/Benjaminax)
