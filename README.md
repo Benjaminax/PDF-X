@@ -19,7 +19,6 @@ A modern web application for working with PDF files. Built with React, Vite, and
 ![Screenshot 2](src/assets/Screenshots/Screenshot%202026-05-14%20203339.png)
 ![Screenshot 3](src/assets/Screenshots/image.png)
 
-If the screenshots don't appear on GitHub, make sure the image files are committed to the repository (they live in the `assets/Screenshots/` folder) and not excluded by `.gitignore`.
 
 ## Getting Started
 
