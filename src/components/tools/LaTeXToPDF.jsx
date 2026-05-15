@@ -59,6 +59,25 @@ x-y&=1
 \\end{aligned}
 \\right. \\]
 
+\\section*{Advanced Math \\& Formatting}
+% Using the $$ syntax
+$$ P(A \\cup B) = P(A) + P(B) - P(A \\cap B) $$
+
+% Standalone Matrix (auto-detected)
+\\begin{pmatrix}
+\\alpha & \\beta \\\\
+\\gamma & \\delta
+\\end{pmatrix}
+
+% Piecewise function (cases)
+\\begin{cases}
+x + y = 5 \\\\
+2x - y = 1
+\\end{cases}
+
+% Inline math mixed with text
+The fundamental theorem of calculus states that if $F(x) = \\int_{a}^{x} f(t) \\, dt$, then $F'(x) = f(x)$.
+
 \\end{document}`;
 
 export default function LaTeXToPDF() {
