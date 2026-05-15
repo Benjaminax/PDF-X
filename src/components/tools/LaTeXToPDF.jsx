@@ -288,13 +288,15 @@ export default function LaTeXToPDF() {
       const trimmed = p.trim();
       if (!trimmed) return '';
 
-      // Auto-detect unwrapped loose math blocks
-      if (/\\frac|\\int|\\sum|\\lim|\\vec|\\sqrt|\\pm|\\infty|\\langle|\\cup|\\cap|\\alpha|\\beta|\\gamma|\\theta|\\pi|\\lambda|\\mu|\\sigma|\\omega|\\nabla|\\partial|\\prod|\\approx|\\neq|\\equiv/.test(trimmed)) {
-        try {
-          // Attempt to render the whole paragraph as a display math block
-          return `<div class="my-10 py-4 flex justify-center math-block" style="line-height: normal; page-break-inside: avoid;">${katex.renderToString(trimmed.replace(/\n/g, ' '), { displayMode: true, throwOnError: false, trust: true })}</div>`;
-        } catch (e) {
-          // If it fails, just fall through to normal paragraph
+      // Auto-detect unwrapped loose math blocks ONLY if they don't already have rendered KaTeX
+      if (!p.includes('class="katex"')) {
+        if (/\\frac|\\int|\\sum|\\lim|\\vec|\\sqrt|\\pm|\\infty|\\langle|\\cup|\\cap|\\alpha|\\beta|\\gamma|\\theta|\\pi|\\lambda|\\mu|\\sigma|\\omega|\\nabla|\\partial|\\prod|\\approx|\\neq|\\equiv/.test(trimmed)) {
+          try {
+            // Attempt to render the whole paragraph as a display math block
+            return `<div class="my-10 py-4 flex justify-center math-block" style="line-height: normal; page-break-inside: avoid;">${katex.renderToString(trimmed.replace(/\n/g, ' '), { displayMode: true, throwOnError: false, trust: true })}</div>`;
+          } catch (e) {
+            // If it fails, just fall through to normal paragraph
+          }
         }
       }
 
