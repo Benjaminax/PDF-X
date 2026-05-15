@@ -284,7 +284,7 @@ export default function LaTeXToPDF() {
 
     content = content.split('\n\n').map(p => {
       // Skip wrapping block elements, but DO wrap inline math (which uses spans)
-      if (p.includes('<h') || p.includes('<div') || p.includes('<ul') || p.includes('<ol') || p.includes('<table')) return p;
+      if (p.includes('<h') || p.includes('<div') || p.includes('</div') || p.includes('<ul') || p.includes('<ol') || p.includes('<table')) return p;
       const trimmed = p.trim();
       if (!trimmed) return '';
 
