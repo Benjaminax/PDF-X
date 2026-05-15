@@ -137,6 +137,26 @@ export default function LaTeXToPDF() {
       .replace(/\\TeX/g, 'T<sub>e</sub>X')
       .replace(/\\copyright/g, '©');
 
+    // Handle labels and eqrefs manually to prevent KaTeX errors and support cross-referencing
+    let eqCount = 0;
+    const labels = {};
+    const numberedEnvs = ['equation', 'align', 'gather', 'multline'];
+    numberedEnvs.forEach(env => {
+      const re = new RegExp('\\\\begin\\{' + env + '\\}([\\s\\S]*?)\\\\end\\{' + env + '\\}', 'g');
+      content = content.replace(re, (match, body) => {
+        eqCount++;
+        const labelMatch = body.match(/\\label\{([^}]+)\}/);
+        if (labelMatch) {
+          labels[labelMatch[1]] = eqCount;
+        }
+        const cleanBody = body.replace(/\\label\{[^}]+\}/g, '');
+        return `\\begin{${env}}${cleanBody}\\end{${env}}`;
+      });
+    });
+
+    content = content.replace(/\\eqref\{([^}]+)\}/g, (match, name) => `(${labels[name] || '?'})`);
+    content = content.replace(/\\ref\{([^}]+)\}/g, (match, name) => `${labels[name] || '?'}`);
+
     content = content.replace(/\\begin\{align\*?\}([\s\S]*?)\\end\{align\*?\}/g, (match, body) => {
       try {
         const rendered = katex.renderToString(`\\begin{aligned}${body}\\end{aligned}`, { 
@@ -252,7 +272,8 @@ export default function LaTeXToPDF() {
     `);
 
     content = content.split('\n\n').map(p => {
-      if (p.includes('<h') || p.includes('<div') || p.includes('<ul') || p.includes('<ol') || p.includes('<table') || p.includes('class="katex')) return p;
+      // Skip wrapping block elements, but DO wrap inline math (which uses spans)
+      if (p.includes('<h') || p.includes('<div') || p.includes('<ul') || p.includes('<ol') || p.includes('<table')) return p;
       const trimmed = p.trim();
       if (!trimmed) return '';
 
