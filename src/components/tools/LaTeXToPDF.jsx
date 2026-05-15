@@ -242,6 +242,17 @@ export default function LaTeXToPDF() {
       if (p.includes('<h') || p.includes('<div') || p.includes('<ul') || p.includes('<ol') || p.includes('<table') || p.includes('class="katex')) return p;
       const trimmed = p.trim();
       if (!trimmed) return '';
+
+      // Auto-detect unwrapped loose math blocks
+      if (/\\frac|\\int|\\sum|\\lim|\\vec|\\sqrt|\\pm|\\infty|\\langle/.test(trimmed)) {
+        try {
+          // Attempt to render the whole paragraph as a display math block
+          return `<div class="my-10 py-4 flex justify-center math-block" style="line-height: normal; page-break-inside: avoid;">${katex.renderToString(trimmed.replace(/\n/g, ' '), { displayMode: true, throwOnError: false, trust: true })}</div>`;
+        } catch (e) {
+          // If it fails, just fall through to normal paragraph
+        }
+      }
+
       return `<p class="mb-6 leading-normal font-serif text-[11pt] text-justify">${trimmed.replace(/\n/g, ' ')}</p>`;
     }).join('');
 
