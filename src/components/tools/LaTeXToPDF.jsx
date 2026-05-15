@@ -156,7 +156,6 @@ export default function LaTeXToPDF() {
 
     content = content.replace(/\\eqref\{([^}]+)\}/g, (match, name) => `(${labels[name] || '?'})`);
     content = content.replace(/\\ref\{([^}]+)\}/g, (match, name) => `${labels[name] || '?'}`);
-
     content = content.replace(/\\begin\{align\*?\}([\s\S]*?)\\end\{align\*?\}/g, (match, body) => {
       try {
         const rendered = katex.renderToString(`\\begin{aligned}${body}\\end{aligned}`, { 
@@ -164,7 +163,7 @@ export default function LaTeXToPDF() {
           throwOnError: false,
           trust: true
         });
-        return `<div class="my-10 py-4 math-block" style="line-height: normal; page-break-inside: avoid;">${rendered}</div>`;
+        return `<div class="my-10 py-4 math-block flex justify-center" style="line-height: normal; page-break-inside: avoid;">${rendered}</div>`;
       } catch (e) { return match; }
     });
 
@@ -290,7 +289,7 @@ export default function LaTeXToPDF() {
 
       // Auto-detect unwrapped loose math blocks ONLY if they don't already have rendered KaTeX
       if (!p.includes('class="katex"')) {
-        if (/\\frac|\\int|\\sum|\\lim|\\vec|\\sqrt|\\pm|\\infty|\\langle|\\cup|\\cap|\\alpha|\\beta|\\gamma|\\theta|\\pi|\\lambda|\\mu|\\sigma|\\omega|\\nabla|\\partial|\\prod|\\approx|\\neq|\\equiv/.test(trimmed)) {
+        if (/\\frac|\\int|\\sum|\\lim|\\vec|\\sqrt|\\pm|\\infty|\\langle|\\cup|\\cap|\\alpha|\\beta|\\gamma|\\theta|\\pi|\\lambda|\\mu|\\sigma|\\omega|\\nabla|\\partial|\\prod|\\approx|\\neq|\\equiv|\\\\begin\\{/.test(trimmed)) {
           try {
             // Attempt to render the whole paragraph as a display math block
             return `<div class="my-10 py-4 flex justify-center math-block" style="line-height: normal; page-break-inside: avoid;">${katex.renderToString(trimmed.replace(/\n/g, ' '), { displayMode: true, throwOnError: false, trust: true })}</div>`;
