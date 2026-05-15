@@ -150,6 +150,13 @@ export default function LaTeXToPDF() {
       return `<table class="w-full border-collapse mb-8 font-serif" style="border: 1px solid #cbd5e1; page-break-inside: avoid;">${rows}</table>`;
     });
 
+    // Display math $$ ... $$
+    content = content.replace(/(?<!\\)\$\$([\s\S]*?)(?<!\\)\$\$/g, (match, formula) => {
+      try {
+        return `<div class="my-10 py-4 flex justify-center math-block" style="line-height: normal; page-break-inside: avoid;">${katex.renderToString(formula.trim(), { displayMode: true, throwOnError: false, trust: true })}</div>`;
+      } catch (e) { return match; }
+    });
+
     // Display math: \[ ... \], \begin{equation}, align, gather, etc.
     content = content.replace(/\\\[([\s\S]*?)\\\]/g, (match, formula) => {
       try {
@@ -158,12 +165,14 @@ export default function LaTeXToPDF() {
     });
 
     // Common display environments
-    const displayEnvs = ['equation', 'equation\*', 'align', 'align\*', 'gather', 'gather\*', 'multline', 'multline\*'];
+    const displayEnvs = ['equation', 'equation\\*', 'align', 'align\\*', 'gather', 'gather\\*', 'multline', 'multline\\*', 'pmatrix', 'bmatrix', 'vmatrix', 'cases', 'split'];
     displayEnvs.forEach(env => {
-      const re = new RegExp('\\\\begin\\{' + env.replace('\\','') + '\\\}([\\s\\S]*?)\\\\end\\{' + env.replace('\\','') + '\\\}', 'g');
+      const cleanEnv = env.replace('\\\\', '\\');
+      const regexEnv = env.replace('\\*', '\\*');
+      const re = new RegExp('\\\\begin\\{' + regexEnv + '\\}([\\s\\S]*?)\\\\end\\{' + regexEnv + '\\}', 'g');
       content = content.replace(re, (m, body) => {
         try {
-          return `<div class="my-10 py-4 math-block" style="page-break-inside: avoid;">${katex.renderToString(body.trim(), { displayMode: true, throwOnError: false, trust: true })}</div>`;
+          return `<div class="my-10 py-4 flex justify-center math-block" style="page-break-inside: avoid;">${katex.renderToString(`\\begin{${cleanEnv}}${body.trim()}\\end{${cleanEnv}}`, { displayMode: true, throwOnError: false, trust: true })}</div>`;
         } catch (e) { return m; }
       });
     });
