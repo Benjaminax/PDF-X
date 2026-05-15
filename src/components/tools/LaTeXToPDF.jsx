@@ -168,14 +168,18 @@ export default function LaTeXToPDF() {
       } catch (e) { return match; }
     });
 
-    content = content.replace(/\\begin\{itemize\}([\s\S]*?)\\end\{itemize\}/g, (match, body) => {
+    content = content.replace(/\\begin\{itemize\}(?:\[.*?\])?([\s\S]*?)\\end\{itemize\}/g, (match, body) => {
       const items = body.split('\\item').filter(i => i.trim()).map(i => `<li class="mb-2 pl-2">${i.trim()}</li>`).join('');
       return `<ul class="list-disc ml-8 mb-6 font-serif text-[11pt]">${items}</ul>`;
     });
     
-    content = content.replace(/\\begin\{enumerate\}([\s\S]*?)\\end\{enumerate\}/g, (match, body) => {
+    content = content.replace(/\\begin\{enumerate\}(?:\[.*?\])?([\s\S]*?)\\end\{enumerate\}/g, (match, body) => {
       const items = body.split('\\item').filter(i => i.trim()).map(i => `<li class="mb-2 pl-2">${i.trim()}</li>`).join('');
       return `<ol class="list-decimal ml-8 mb-6 font-serif text-[11pt]">${items}</ol>`;
+    });
+
+    content = content.replace(/\\begin\{multicols\}\{(\d+)\}([\s\S]*?)\\end\{multicols\}/g, (match, cols, body) => {
+      return `<div style="column-count: ${cols}; column-gap: 2rem;">${body}</div>`;
     });
 
     content = content.replace(/\\begin\{tabular\}\{.*?\}[\s\S]*?\\end\{tabular\}/g, (match) => {
@@ -257,12 +261,19 @@ export default function LaTeXToPDF() {
       .replace(/\\underline\{(.*?)\}/g, '<span style="text-decoration: underline;">$1</span>');
 
     content = content
-      .replace(/\\\&/g, '&')
+      .replace(/\\&/g, '&')
       .replace(/\\\$/g, '$')
-      .replace(/\\\%/g, '%')
-      .replace(/\\\_/g, '_')
+      .replace(/\\%/g, '%')
+      .replace(/\\_/g, '_')
       .replace(/\\\{/g, '{')
       .replace(/\\\}/g, '}');
+
+    content = content
+      .replace(/\\Huge/g, '')
+      .replace(/\\large/g, '')
+      .replace(/\\bfseries/g, '')
+      .replace(/\\noindent/g, '')
+      .replace(/\\parskip/g, '');
 
     content = content.replace(/\\newpage/g, `
       <div class="my-12 relative no-print" style="border-top: 2px dashed #f1f5f9;">
