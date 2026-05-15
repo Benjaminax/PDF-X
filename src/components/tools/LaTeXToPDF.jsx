@@ -244,7 +244,7 @@ export default function LaTeXToPDF() {
       if (!trimmed) return '';
 
       // Auto-detect unwrapped loose math blocks
-      if (/\\frac|\\int|\\sum|\\lim|\\vec|\\sqrt|\\pm|\\infty|\\langle/.test(trimmed)) {
+      if (/\\frac|\\int|\\sum|\\lim|\\vec|\\sqrt|\\pm|\\infty|\\langle|\\cup|\\cap|\\alpha|\\beta|\\gamma|\\theta|\\pi|\\lambda|\\mu|\\sigma|\\omega|\\nabla|\\partial|\\prod|\\approx|\\neq|\\equiv/.test(trimmed)) {
         try {
           // Attempt to render the whole paragraph as a display math block
           return `<div class="my-10 py-4 flex justify-center math-block" style="line-height: normal; page-break-inside: avoid;">${katex.renderToString(trimmed.replace(/\n/g, ' '), { displayMode: true, throwOnError: false, trust: true })}</div>`;
