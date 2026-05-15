@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import FileDropzone from '../common/FileDropzone';
 import { ocrService } from '../../services/ocrService';
 import { jsPDF } from 'jspdf';
+import { PDFDocument } from 'pdf-lib';
 import { FileSearch, Copy, Download, Loader2, CheckCircle2, Archive, FileText, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { downloadFile } from '../../utils/download';
 import JSZip from 'jszip';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 function cn(...inputs) {
@@ -18,6 +19,7 @@ export default function OCRTool() {
   const [resultText, setResultText] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [progress, setProgress] = useState('');
 
   const handleOCR = async () => {
     if (files.length === 0) return;
@@ -27,42 +29,69 @@ export default function OCRTool() {
     try {
       const zip = new (JSZip.default || JSZip)();
       let totalText = '';
+      let successCount = 0;
+      const failedFiles = [];
 
-      for (const file of files) {
-        if (file.type === 'application/pdf') {
-          const pdfBytes = await file.arrayBuffer();
-          const pdfDoc = await PDFDocument.load(pdfBytes);
-          const pageCount = pdfDoc.getPageCount();
-          
-          let docText = '';
-          for (let i = 1; i <= pageCount; i++) {
-            const imageBlob = await ocrService.pdfPageToImage(file, i);
-            const text = await ocrService.recognizeText(imageBlob);
-            docText += `--- Page ${i} ---\n\n${text}\n\n`;
-          }
-          
-          if (files.length === 1) {
-            totalText = docText;
+      for (let fileIdx = 0; fileIdx < files.length; fileIdx++) {
+        const file = files[fileIdx];
+        setProgress(`Processing ${file.name}...`);
+        try {
+          if (file.type === 'application/pdf') {
+            const pdfBytes = await file.arrayBuffer();
+            const pdfDoc = await PDFDocument.load(pdfBytes);
+            const pageCount = pdfDoc.getPageCount();
+
+            let docText = '';
+            for (let i = 1; i <= pageCount; i++) {
+              setProgress(`Scanning ${file.name} - Page ${i}/${pageCount}...`);
+              const imageBlob = await ocrService.pdfPageToImage(file, i);
+              const text = await ocrService.recognizeText(imageBlob);
+              docText += `--- Page ${i} ---\n\n${text}\n\n`;
+            }
+
+            if (files.length === 1) {
+              totalText = docText;
+            } else {
+              zip.file(`OCR-${file.name.split('.')[0]}.txt`, docText);
+            }
           } else {
-            zip.file(`OCR-${file.name.split('.')[0]}.txt`, docText);
+            const text = await ocrService.recognizeText(file);
+            if (files.length === 1) {
+              totalText = text;
+            } else {
+              zip.file(`OCR-${file.name.split('.')[0]}.txt`, text);
+            }
           }
-        } else {
-          const text = await ocrService.recognizeText(file);
-          if (files.length === 1) {
-            totalText = text;
-          } else {
-            zip.file(`OCR-${file.name.split('.')[0]}.txt`, text);
-          }
+
+          successCount++;
+        } catch (fileError) {
+          console.error(`Failed processing ${file.name}:`, fileError);
+          failedFiles.push({ name: file.name, error: fileError.message || String(fileError) });
         }
       }
 
+      // Finalize results and provide user feedback
       if (files.length === 1) {
-        setResultText(totalText);
-        downloadFile(totalText, `OCR-${files[0].name.split('.')[0]}.txt`, 'text/plain');
+        if (successCount === 1) {
+          setResultText(totalText);
+          downloadFile(totalText, `OCR-${files[0].name.split('.')[0]}.txt`, 'text/plain');
+        } else {
+          throw new Error(`Failed to process file: ${files[0].name}`);
+        }
       } else {
-        const content = await zip.generateAsync({ type: 'blob' });
-        downloadFile(content, 'OCR-Batch.zip', 'application/zip');
-        setResultText('Batch processing complete! Check your downloads.');
+        if (successCount > 0) {
+          const content = await zip.generateAsync({ type: 'blob' });
+          downloadFile(content, 'OCR-Batch.zip', 'application/zip');
+          setResultText(`Batch processing complete: ${successCount} succeeded, ${failedFiles.length} failed.`);
+        } else {
+          throw new Error('All files failed during OCR processing.');
+        }
+      }
+
+      if (failedFiles.length > 0) {
+        // Show a concise error summary
+        const summary = failedFiles.map(f => `${f.name}: ${f.error}`).join('\n');
+        alert(`Some files failed during OCR:\n${summary}`);
       }
     } catch (error) {
       console.error('OCR failed:', error);
@@ -136,6 +165,12 @@ export default function OCRTool() {
             {isProcessing ? <Loader2 className="animate-spin" size={16} /> : <FileSearch size={16} />}
             {isProcessing ? 'SCANNING...' : 'EXTRACT TEXT'}
           </button>
+
+          {progress && (
+            <p className="text-[10px] text-accent font-black text-center animate-pulse uppercase tracking-widest">
+              {progress}
+            </p>
+          )}
         </div>
       </div>
 
@@ -176,7 +211,7 @@ export default function OCRTool() {
                 </button>
               </div>
             </div>
-            <div className="bg-slate-50/50 dark:bg-slate-900/50 p-8 rounded-[2rem] border border-white/10 min-h-[300px] max-h-[600px] overflow-y-auto whitespace-pre-wrap text-slate-700 dark:text-slate-300 font-mono text-sm leading-relaxed scrollbar-hide shadow-inner">
+            <div className="bg-slate-50/50 dark:bg-zinc-900/50 p-8 rounded-[2rem] border border-slate-100 dark:border-white/5 min-h-[300px] max-h-[600px] overflow-y-auto whitespace-pre-wrap text-slate-700 dark:text-zinc-300 font-mono text-sm leading-relaxed scrollbar-hide shadow-inner">
               {resultText}
             </div>
           </motion.div>

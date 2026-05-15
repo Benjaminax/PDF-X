@@ -2,7 +2,7 @@ import { createWorker } from 'tesseract.js';
 import * as pdfjsLib from 'pdfjs-dist';
 
 // Set up worker source
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 export const ocrService = {
   /**
@@ -11,7 +11,10 @@ export const ocrService = {
    * @returns {Promise<string>}
    */
   recognizeText: async (image) => {
-    const worker = await createWorker('eng');
+    const worker = createWorker();
+    await worker.load();
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
     const { data: { text } } = await worker.recognize(image);
     await worker.terminate();
     return text;
@@ -51,7 +54,7 @@ export const ocrService = {
     const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
     let fullText = '';
 
-    for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
+    for (let i = 1; i <= Math.min(pdf.numPages, 20); i++) {
       const page = await pdf.getPage(i);
       const textContent = await page.getTextContent();
       const pageText = textContent.items.map(item => item.str).join(' ');

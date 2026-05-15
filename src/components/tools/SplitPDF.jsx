@@ -6,7 +6,7 @@ import { Scissors, Download, Loader2, Archive, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 import JSZip from 'jszip';
 import { downloadFile } from '../../utils/download';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 function cn(...inputs) {
@@ -64,23 +64,23 @@ export default function SplitPDF() {
         <FileDropzone files={files} setFiles={setFiles} multiple={false} />
       </div>
       
-      <div className="w-full lg:w-72 bg-white border border-slate-100 p-6 rounded-[1.5rem] space-y-6 animate-in fade-in slide-in-from-right-4 shadow-sm">
-        <h3 className="font-black text-lg text-slate-800 flex items-center gap-2">
+      <div className="w-full lg:w-72 glass-card p-6 space-y-6 animate-in fade-in slide-in-from-right-4">
+        <h3 className="font-black text-lg text-slate-800 dark:text-zinc-100 flex items-center gap-2">
           <Settings className="text-accent" size={18} />
           SETTINGS
         </h3>
 
         <div className="space-y-4">
-          <div className="flex p-1 bg-slate-50 rounded-xl">
+          <div className="flex p-1 bg-slate-50 dark:bg-zinc-800/50 rounded-xl">
             <button 
               onClick={() => setSplitMode('custom')}
-              className={cn("flex-1 py-1.5 text-[10px] font-black rounded-lg transition-all", splitMode === 'custom' ? "bg-white text-slate-900 shadow-sm" : "text-slate-400")}
+              className={cn("flex-1 py-1.5 text-[10px] font-black rounded-lg transition-all", splitMode === 'custom' ? "bg-white dark:bg-zinc-700 text-slate-900 dark:text-zinc-100 shadow-sm" : "text-slate-400")}
             >
               CUSTOM
             </button>
             <button 
               onClick={() => setSplitMode('fixed')}
-              className={cn("flex-1 py-1.5 text-[10px] font-black rounded-lg transition-all", splitMode === 'fixed' ? "bg-white text-slate-900 shadow-sm" : "text-slate-400")}
+              className={cn("flex-1 py-1.5 text-[10px] font-black rounded-lg transition-all", splitMode === 'fixed' ? "bg-white dark:bg-zinc-700 text-slate-900 dark:text-zinc-100 shadow-sm" : "text-slate-400")}
             >
               FIXED
             </button>
@@ -94,7 +94,7 @@ export default function SplitPDF() {
                 placeholder="e.g. 1-3, 5"
                 value={range}
                 onChange={(e) => setRange(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border-2 border-slate-50 focus:border-accent outline-none font-mono text-xs"
+                className="w-full px-3 py-2 rounded-xl border-2 border-slate-50 dark:border-zinc-800 focus:border-accent outline-none font-mono text-xs bg-white dark:bg-zinc-900/50 text-slate-900 dark:text-zinc-100"
               />
             </div>
           ) : (
@@ -105,7 +105,7 @@ export default function SplitPDF() {
                   onClick={() => setFixedInterval(1)}
                   className={cn(
                     "w-full py-2 rounded-xl border-2 text-[10px] font-black transition-all",
-                    fixedInterval === 1 ? "border-accent bg-accent/5 text-slate-900" : "border-slate-50 text-slate-400"
+                    fixedInterval === 1 ? "border-accent bg-accent/5 text-slate-900 dark:text-zinc-100" : "border-slate-50 dark:border-zinc-800 text-slate-400"
                   )}
                 >
                   SPLIT EVERY PAGE
@@ -117,7 +117,7 @@ export default function SplitPDF() {
                     placeholder="Pages"
                     value={fixedInterval}
                     onChange={(e) => setFixedInterval(parseInt(e.target.value) || 1)}
-                    className="w-full px-3 py-2 rounded-xl border-2 border-slate-50 focus:border-accent outline-none font-bold text-slate-700 text-sm"
+                    className="w-full px-3 py-2 rounded-xl border-2 border-slate-50 dark:border-zinc-800 focus:border-accent outline-none font-bold text-slate-700 dark:text-zinc-200 text-sm bg-white dark:bg-zinc-900/50"
                   />
                   <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap">Pages / File</span>
                 </div>

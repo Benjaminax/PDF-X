@@ -7,7 +7,7 @@ import { Sparkles, Loader2, BrainCircuit, Quote, Download, Settings, FileText } 
 import { motion, AnimatePresence } from 'framer-motion';
 import { downloadFile } from '../../utils/download';
 import JSZip from 'jszip';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 function cn(...inputs) {
@@ -69,7 +69,8 @@ export default function AISummarizer() {
       }
     } catch (error) {
       console.error('Summarization failed:', error);
-      alert(error.message || 'Failed to summarize PDF. Make sure it contains readable text.');
+      const errorMsg = error.message || 'Failed to summarize PDF.';
+      alert(errorMsg);
     } finally {
       setIsProcessing(false);
       setProgress('');
@@ -87,9 +88,9 @@ export default function AISummarizer() {
         />
       </div>
       
-      <div className="w-full lg:w-72 bg-white border border-slate-100 p-6 rounded-[1.5rem] space-y-6 animate-in fade-in slide-in-from-right-4 shadow-sm">
+      <div className="w-full lg:w-72 glass-card p-6 space-y-6 animate-in fade-in slide-in-from-right-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-black text-lg text-slate-800 flex items-center gap-2">
+          <h3 className="font-black text-lg text-slate-800 dark:text-zinc-100 flex items-center gap-2">
             <Settings className="text-accent" size={18} />
             SETTINGS
           </h3>
@@ -101,7 +102,7 @@ export default function AISummarizer() {
         </div>
 
         <div className="space-y-3">
-          <p className="text-[11px] text-slate-400 font-medium leading-relaxed uppercase tracking-wider">
+          <p className="text-[11px] text-slate-400 dark:text-zinc-400 font-medium leading-relaxed uppercase tracking-wider">
             {files.length > 1 
               ? `AI will analyze ${files.length} PDFs.`
               : 'Our AI will generate a concise summary.'}
@@ -132,7 +133,7 @@ export default function AISummarizer() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="mt-12 w-full max-w-4xl bg-white border border-slate-100 p-10 rounded-[3rem] shadow-xl shadow-slate-200/50 relative overflow-hidden"
+            className="mt-12 w-full max-w-4xl glass-card p-10 relative overflow-hidden"
           >
             <div className="absolute top-0 right-0 p-8 text-indigo-100 -rotate-12">
               <Quote size={80} />
@@ -146,13 +147,13 @@ export default function AISummarizer() {
                 <h4 className="text-xl font-bold text-slate-800 tracking-tight">AI Executive Summary</h4>
               </div>
 
-              <div className="text-slate-700 leading-relaxed text-lg font-medium italic">
+              <div className="text-slate-700 dark:text-zinc-300 leading-relaxed text-lg font-medium italic">
                 "{summary}"
               </div>
 
               <div className="mt-10 pt-8 border-t border-indigo-100 flex justify-between items-center text-sm">
                 <div className="flex gap-2 items-center">
-                  <span className="text-slate-400 mr-2">Download:</span>
+                  <span className="text-slate-400 dark:text-zinc-300 mr-2">Download:</span>
                   <button 
                     onClick={downloadSummary}
                     className="flex items-center gap-1.5 text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-3 py-1.5 rounded-lg transition-all"

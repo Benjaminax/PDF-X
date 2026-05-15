@@ -29,17 +29,17 @@ export default function FileDropzone({ files, setFiles, accept = { 'application/
         className={`
           border-2 border-dashed rounded-3xl p-12 transition-all cursor-pointer
           flex flex-col items-center justify-center text-center
-          ${isDragActive ? 'border-accent bg-accent/5 scale-[0.98]' : 'border-slate-200 hover:border-accent/50 hover:bg-slate-50'}
+          ${isDragActive ? 'border-accent bg-accent/5 scale-[0.98]' : 'border-slate-200 dark:border-zinc-800 hover:border-accent/50 hover:bg-slate-50 dark:hover:bg-zinc-900/50'}
         `}
       >
         <input {...getInputProps()} />
         <div className="w-16 h-16 bg-accent/10 text-accent rounded-2xl flex items-center justify-center mb-4">
           <Upload size={32} />
         </div>
-        <h4 className="text-xl font-bold text-slate-800 mb-1">
+        <h4 className="text-xl font-bold text-slate-800 dark:text-zinc-100 mb-1">
           {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
         </h4>
-        <p className="text-slate-500">
+        <p className="text-slate-500 dark:text-zinc-400">
           or click to browse from your computer
         </p>
       </div>
@@ -57,12 +57,12 @@ export default function FileDropzone({ files, setFiles, accept = { 'application/
                 key={`${file.name}-${index}`}
                 className="glass p-4 rounded-2xl flex items-center gap-4 group"
               >
-                <div className="w-10 h-10 bg-slate-100 text-slate-500 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 rounded-xl flex items-center justify-center">
                   <File size={20} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-slate-800 truncate">{file.name}</p>
-                  <p className="text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                  <p className="font-semibold text-slate-800 dark:text-zinc-100 truncate">{file.name}</p>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                 </div>
                 <button 
                   onClick={() => removeFile(index)}

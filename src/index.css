@@ -26,8 +26,8 @@ body {
 }
 
 .dark body {
-  background-color: #0f172a;
-  color: #f1f5f9;
+  background-color: #000000;
+  color: #f4f4f5;
 }
 
 #root {
@@ -43,11 +43,83 @@ body {
   .btn-secondary {
     @apply px-6 py-3 bg-white/80 text-slate-800 border border-slate-200 rounded-xl font-semibold transition-all hover:bg-white hover:scale-105 active:scale-95 shadow-md;
   }
+
+  .glass {
+    @apply bg-white/70 dark:bg-black/70 backdrop-blur-xl border border-white/40 dark:border-white/5 shadow-2xl;
+  }
+
+  .glass-card {
+    @apply bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-white/20 dark:border-white/5 rounded-3xl shadow-xl transition-all duration-300;
+  }
+
+  .sidebar-item {
+    @apply w-full flex items-center px-4 py-3 rounded-2xl transition-all duration-300 relative overflow-hidden;
+  }
+
+  .sidebar-item-active {
+    @apply bg-accent/10 dark:bg-accent/20 text-slate-900 dark:text-white font-black shadow-[inset_0_0_20px_rgba(156,240,39,0.1)];
+  }
+
+  .sidebar-item-inactive {
+    @apply text-slate-500 dark:text-zinc-400 hover:bg-white/50 dark:hover:bg-zinc-800/50 hover:text-slate-900 dark:hover:text-white;
+  }
+}
+
+/* Premium Effects */
+.grain-overlay {
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  right: -50%;
+  bottom: -50%;
+  width: 200%;
+  height: 200%;
+  background: transparent url('http://assets.iceable.com/img/noise-transparent.png') repeat 0 0;
+  background-repeat: repeat;
+  opacity: .04;
+  pointer-events: none;
+  z-index: 1000;
+  animation: noise 0.2s infinite;
+}
+
+@keyframes noise {
+  0% { transform: translate(0,0) }
+  10% { transform: translate(-5%,-5%) }
+  20% { transform: translate(-10%,5%) }
+  30% { transform: translate(5%,-10%) }
+  40% { transform: translate(-5%,15%) }
+  50% { transform: translate(-10%,5%) }
+  60% { transform: translate(15%,0) }
+  70% { transform: translate(0,10%) }
+  80% { transform: translate(-15%,0) }
+  90% { transform: translate(10%,5%) }
+  100% { transform: translate(5%,0) }
+}
+
+.custom-cursor {
+  width: 20px;
+  height: 20px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  mix-blend-mode: difference;
+  transition: transform 0.1s ease;
+}
+
+.bg-blur-element {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: -1;
+  opacity: 0.15;
+  pointer-events: none;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {

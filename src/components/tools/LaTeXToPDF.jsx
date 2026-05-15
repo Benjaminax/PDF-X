@@ -5,7 +5,7 @@ import html2pdf from 'html2pdf.js';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { Sigma, Download, Loader2, CheckCircle2, Settings, Type, FileText, AlignLeft, List, Table } from 'lucide-react';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 function cn(...inputs) {
@@ -150,16 +150,43 @@ export default function LaTeXToPDF() {
       return `<table class="w-full border-collapse mb-8 font-serif" style="border: 1px solid #cbd5e1; page-break-inside: avoid;">${rows}</table>`;
     });
 
+    // Display math: \[ ... \], \begin{equation}, align, gather, etc.
     content = content.replace(/\\\[([\s\S]*?)\\\]/g, (match, formula) => {
-      return `<div class="my-10 py-4 flex justify-center math-block" style="line-height: normal; page-break-inside: avoid;">
-                ${katex.renderToString(formula.trim(), { displayMode: true, throwOnError: false, trust: true })}
-              </div>`;
+      try {
+        return `<div class="my-10 py-4 flex justify-center math-block" style="line-height: normal; page-break-inside: avoid;">${katex.renderToString(formula.trim(), { displayMode: true, throwOnError: false, trust: true })}</div>`;
+      } catch (e) { return match; }
     });
-    
-    content = content.replace(/\$([^\$]+?)\$/g, (match, formula) => {
-      if (/^\d+(\.\d+)?$/.test(formula.trim())) return match;
-      return `<span class="inline-math" style="line-height: normal;">${katex.renderToString(formula, { displayMode: false, throwOnError: false, trust: true })}</span>`;
+
+    // Common display environments
+    const displayEnvs = ['equation', 'equation\*', 'align', 'align\*', 'gather', 'gather\*', 'multline', 'multline\*'];
+    displayEnvs.forEach(env => {
+      const re = new RegExp('\\\\begin\\{' + env.replace('\\','') + '\\\}([\\s\\S]*?)\\\\end\\{' + env.replace('\\','') + '\\\}', 'g');
+      content = content.replace(re, (m, body) => {
+        try {
+          return `<div class="my-10 py-4 math-block" style="page-break-inside: avoid;">${katex.renderToString(body.trim(), { displayMode: true, throwOnError: false, trust: true })}</div>`;
+        } catch (e) { return m; }
+      });
     });
+
+    // Inline math using negative lookbehind to avoid escaped \$
+    try {
+      content = content.replace(/(?<!\\)\$([\s\S]+?)(?<!\\)\$/g, (match, formula) => {
+        if (/^\s*\d+(\.\d+)?\s*$/.test(formula)) return match;
+        try {
+          return `<span class="inline-math" style="line-height: normal;">${katex.renderToString(formula, { displayMode: false, throwOnError: false, trust: true })}</span>`;
+        } catch (e) {
+          return match;
+        }
+      });
+    } catch (e) {
+      // Some JS environments may not support lookbehind; fallback to safer heuristic
+      content = content.replace(/\$([^\$\n]+?)\$/g, (match, formula) => {
+        if (/^\s*\d+(\.\d+)?\s*$/.test(formula)) return match;
+        try {
+          return `<span class="inline-math" style="line-height: normal;">${katex.renderToString(formula, { displayMode: false, throwOnError: false, trust: true })}</span>`;
+        } catch (err) { return match; }
+      });
+    }
 
     content = content
       .replace(/\\section\*?\{(.*?)\}/g, '<h2 class="text-xl font-serif font-bold mt-8 mb-4 pb-1" style="color: #0f172a; border-bottom: 1px solid #e2e8f0;">$1</h2>')
@@ -242,7 +269,7 @@ export default function LaTeXToPDF() {
 
         // 794px x 1123px is the standard A4 @ 96DPI
         const canvas = await html2canvas(pageEl, {
-          scale: 5, 
+          scale: 2, 
           useCORS: true,
           logging: false,
           backgroundColor: '#ffffff',
@@ -305,23 +332,23 @@ export default function LaTeXToPDF() {
               <div className="w-8 h-8 bg-blue-500/10 text-blue-500 rounded-lg flex items-center justify-center">
                 <FileText size={18} />
               </div>
-              <h4 className="font-black text-xs text-slate-800 dark:text-slate-100 uppercase tracking-widest">Document Editor</h4>
+              <h4 className="font-black text-xs text-slate-800 dark:text-zinc-100 uppercase tracking-widest">Document Editor</h4>
             </div>
           </div>
           <textarea
             value={latex}
             onChange={(e) => setLatex(e.target.value)}
-            className="w-full h-[700px] p-6 bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl border-2 border-transparent focus:border-accent outline-none font-mono text-xs leading-loose text-slate-700 dark:text-slate-300 transition-all scrollbar-hide"
+            className="w-full h-[700px] p-6 bg-slate-50/50 dark:bg-zinc-900/50 rounded-2xl border-2 border-transparent focus:border-accent outline-none font-mono text-xs leading-loose text-slate-700 dark:text-zinc-300 transition-all scrollbar-hide"
             placeholder="Write your LaTeX here..."
           />
           <div className="mt-6 flex flex-wrap gap-2">
-            <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-slate-900/50 px-2 py-1 rounded-md uppercase">
+            <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-zinc-900/50 px-2 py-1 rounded-md uppercase">
               <AlignLeft size={10} /> Align
             </div>
-            <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-slate-900/50 px-2 py-1 rounded-md uppercase">
+            <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-zinc-900/50 px-2 py-1 rounded-md uppercase">
               <List size={10} /> Lists
             </div>
-            <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-slate-900/50 px-2 py-1 rounded-md uppercase">
+            <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-zinc-900/50 px-2 py-1 rounded-md uppercase">
               <Table size={10} /> Tables
             </div>
           </div>
@@ -335,7 +362,7 @@ export default function LaTeXToPDF() {
             </div>
             <div>
               <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest">PAGINATED PREVIEW</h3>
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">Smart A4 Physical Layout</p>
+              <p className="text-[10px] text-slate-400 dark:text-zinc-400 font-bold uppercase tracking-tighter">Smart A4 Physical Layout</p>
             </div>
           </div>
           <button
@@ -358,7 +385,7 @@ export default function LaTeXToPDF() {
                 className="bg-white text-[#0f172a] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] w-[210mm] min-h-[297mm] p-[1in] box-border relative page-block"
                 style={{ fontFamily: '"Times New Roman", Times, serif' }}
               >
-                <div className="absolute top-4 right-8 text-[9px] font-black text-slate-300 uppercase tracking-widest no-print">
+                <div className="absolute top-4 right-8 text-[9px] font-black text-slate-300 dark:text-zinc-500 uppercase tracking-widest no-print">
                   Page {index + 1}
                 </div>
                 <div 

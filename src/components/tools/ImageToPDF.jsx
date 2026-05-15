@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import FileDropzone from '../common/FileDropzone';
 import { PDFDocument } from 'pdf-lib';
+import { pdfService } from '../../services/pdfService';
 import { FileImage, Download, Loader2, CheckCircle2, Archive, Files, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { downloadFile } from '../../utils/download';
 import JSZip from 'jszip';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 function cn(...inputs) {
@@ -37,67 +38,39 @@ export default function ImageToPDF() {
 
   const handleConvert = async () => {
     if (files.length === 0) return;
-    
+
     setIsProcessing(true);
     try {
-      const processImage = async (pdfDoc, file) => {
-        const imageBytes = await file.arrayBuffer();
-        let image;
-        if (file.type === 'image/jpeg' || file.type === 'image/jpg') {
-          image = await pdfDoc.embedJpg(imageBytes);
-        } else if (file.type === 'image/png') {
-          image = await pdfDoc.embedPng(imageBytes);
-        } else return null;
-
-        const m = MARGINS[margin];
-        let pWidth, pHeight;
-
-        if (pageSize === 'Fit') {
-          pWidth = image.width + (m * 2);
-          pHeight = image.height + (m * 2);
-        } else {
-          const dims = PAGE_SIZES[pageSize];
-          pWidth = orientation === 'portrait' ? dims.width : dims.height;
-          pHeight = orientation === 'portrait' ? dims.height : dims.width;
-        }
-
-        const page = pdfDoc.addPage([pWidth, pHeight]);
-        
-        // Calculate scale to fit image in page minus margins
-        const availableWidth = pWidth - (m * 2);
-        const availableHeight = pHeight - (m * 2);
-        const scale = Math.min(availableWidth / image.width, availableHeight / image.height);
-        
-        const scaledWidth = image.width * scale;
-        const scaledHeight = image.height * scale;
-
-        page.drawImage(image, {
-          x: (pWidth - scaledWidth) / 2,
-          y: (pHeight - scaledHeight) / 2,
-          width: scaledWidth,
-          height: scaledHeight,
-        });
-        return true;
+      // Normalize options to service expectations
+      const opts = {
+        orientation,
+        pageSize: pageSize.toLowerCase(), // 'a4'|'letter'|'fit'
+        margin: MARGINS[margin] ?? 0
       };
 
       if (mergeAll) {
-        const pdfDoc = await PDFDocument.create();
+        const mergedPdf = await PDFDocument.create();
+
         for (const file of files) {
-          await processImage(pdfDoc, file);
+          // pdfService.imageToPDF returns bytes for a single-image PDF
+          const bytes = await pdfService.imageToPDF(file, opts);
+          const single = await PDFDocument.load(bytes);
+          const copied = await mergedPdf.copyPages(single, single.getPageIndices());
+          copied.forEach(p => mergedPdf.addPage(p));
         }
-        const pdfBytes = await pdfDoc.save();
-        downloadFile(pdfBytes, `${files[0].name.split('.')[0]}-merged.pdf`);
+
+        const mergedBytes = await mergedPdf.save();
+        downloadFile(mergedBytes, `${files[0].name.split('.')[0]}-merged.pdf`);
       } else {
         const zip = new (JSZip.default || JSZip)();
         for (const file of files) {
-          const pdfDoc = await PDFDocument.create();
-          await processImage(pdfDoc, file);
-          const pdfBytes = await pdfDoc.save();
-          zip.file(`${file.name.split('.')[0]}.pdf`, pdfBytes);
+          const bytes = await pdfService.imageToPDF(file, opts);
+          zip.file(`${file.name.split('.')[0]}.pdf`, bytes);
         }
         const content = await zip.generateAsync({ type: 'blob' });
         downloadFile(content, 'Converted-Images-Batch.zip', 'application/zip');
       }
+
       setIsDone(true);
       setTimeout(() => setIsDone(false), 3000);
     } catch (error) {
@@ -119,8 +92,8 @@ export default function ImageToPDF() {
         />
       </div>
 
-      <div className="w-full lg:w-80 glass p-8 rounded-[2rem] space-y-8 animate-in fade-in slide-in-from-right-4">
-        <h3 className="font-bold text-xl text-slate-800 flex items-center gap-2">
+      <div className="w-full lg:w-80 glass-card p-8 space-y-8 animate-in fade-in slide-in-from-right-4">
+        <h3 className="font-bold text-xl text-slate-800 dark:text-zinc-100 flex items-center gap-2">
           <Settings className="text-accent" size={20} />
           Options
         </h3>
@@ -138,7 +111,7 @@ export default function ImageToPDF() {
                 onClick={() => setOrientation(opt.id)}
                 className={cn(
                   "flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all",
-                  orientation === opt.id ? "border-accent bg-accent/5 text-accent" : "border-slate-100 text-slate-400 hover:bg-slate-50"
+                  orientation === opt.id ? "border-accent bg-accent/5 text-accent" : "border-slate-100 dark:border-zinc-800 text-slate-400 hover:bg-slate-50 dark:hover:bg-zinc-800"
                 )}
               >
                 <span className="text-2xl leading-none">{opt.icon}</span>
@@ -154,11 +127,11 @@ export default function ImageToPDF() {
           <select 
             value={pageSize}
             onChange={(e) => setPageSize(e.target.value)}
-            className="w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-accent outline-none font-bold text-slate-700 appearance-none bg-slate-50/50"
+            className="w-full p-4 rounded-2xl border-2 border-slate-100 dark:border-zinc-800 focus:border-accent outline-none font-bold text-slate-700 dark:text-zinc-100 appearance-none bg-slate-50/50 dark:bg-zinc-900/50"
           >
-            <option value="A4">A4 (297x210 mm)</option>
-            <option value="Letter">Letter (US)</option>
-            <option value="Fit">Fit (Same as image)</option>
+            <option value="A4" className="dark:bg-zinc-900">A4 (297x210 mm)</option>
+            <option value="Letter" className="dark:bg-zinc-900">Letter (US)</option>
+            <option value="Fit" className="dark:bg-zinc-900">Fit (Same as image)</option>
           </select>
         </div>
 
@@ -197,15 +170,15 @@ export default function ImageToPDF() {
               onClick={() => setMergeAll(true)}
               className={cn(
                 "w-full p-4 rounded-2xl border-2 transition-all text-left flex items-center gap-3",
-                mergeAll ? "border-accent bg-accent/5" : "border-slate-50 hover:bg-slate-50"
+                mergeAll ? "border-accent bg-accent/5" : "border-slate-50 dark:border-zinc-800 hover:border-accent/50 hover:bg-accent/5"
               )}
             >
               <div className={cn("p-2 rounded-lg", mergeAll ? "bg-accent text-slate-900" : "bg-slate-100 text-slate-400")}>
                 <Files size={18} />
               </div>
               <div>
-                <p className={cn("font-bold text-sm", mergeAll ? "text-slate-900" : "text-slate-700")}>Merge into One PDF</p>
-                <p className="text-[10px] text-slate-400">All images in a single document</p>
+                <p className={cn("font-bold text-sm", mergeAll ? "text-slate-900 dark:text-zinc-100" : "text-slate-700 dark:text-zinc-300")}>Merge into One PDF</p>
+                <p className="text-[10px] text-slate-400 dark:text-zinc-400">All images in a single document</p>
               </div>
             </button>
 
@@ -213,15 +186,15 @@ export default function ImageToPDF() {
               onClick={() => setMergeAll(false)}
               className={cn(
                 "w-full p-4 rounded-2xl border-2 transition-all text-left flex items-center gap-3",
-                !mergeAll ? "border-accent bg-accent/5" : "border-slate-50 hover:bg-slate-50"
+                !mergeAll ? "border-accent bg-accent/5" : "border-slate-50 dark:border-zinc-800 hover:border-accent/50 hover:bg-accent/5"
               )}
             >
               <div className={cn("p-2 rounded-lg", !mergeAll ? "bg-accent text-slate-900" : "bg-slate-100 text-slate-400")}>
                 <Archive size={18} />
               </div>
               <div>
-                <p className={cn("font-bold text-sm", !mergeAll ? "text-slate-900" : "text-slate-700")}>Individual PDFs (ZIP)</p>
-                <p className="text-[10px] text-slate-400">Each image becomes its own PDF</p>
+                <p className={cn("font-bold text-sm", !mergeAll ? "text-slate-900 dark:text-zinc-100" : "text-slate-700 dark:text-zinc-300")}>Individual PDFs (ZIP)</p>
+                <p className="text-[10px] text-slate-400 dark:text-zinc-400">Each image becomes its own PDF</p>
               </div>
             </button>
           </div>

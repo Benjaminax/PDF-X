@@ -4,7 +4,7 @@ import { pdfService } from '../../services/pdfService';
 import { Zap, Download, Loader2, CheckCircle2, Settings } from 'lucide-react';
 import { downloadFile } from '../../utils/download';
 import JSZip from 'jszip';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 function cn(...inputs) {
@@ -22,13 +22,13 @@ export default function CompressPDF() {
     
     setIsProcessing(true);
     try {
-      if (files.length === 1) {
-        const compressedBytes = await pdfService.compressPDF(files[0]);
+        if (files.length === 1) {
+        const compressedBytes = await pdfService.compressPDF(files[0], level);
         downloadFile(compressedBytes, `compressed-${files[0].name}`);
       } else {
         const zip = new (JSZip.default || JSZip)();
         for (const file of files) {
-          const compressedBytes = await pdfService.compressPDF(file);
+          const compressedBytes = await pdfService.compressPDF(file, level);
           zip.file(`compressed-${file.name}`, compressedBytes);
         }
         const content = await zip.generateAsync({ type: 'blob' });
@@ -50,8 +50,8 @@ export default function CompressPDF() {
         <FileDropzone files={files} setFiles={setFiles} multiple={true} />
       </div>
       
-      <div className="w-full lg:w-72 bg-white border border-slate-100 p-6 rounded-[1.5rem] space-y-6 animate-in fade-in slide-in-from-right-4 shadow-sm">
-        <h3 className="font-black text-lg text-slate-800 flex items-center gap-2">
+      <div className="w-full lg:w-72 glass-card p-6 space-y-6 animate-in fade-in slide-in-from-right-4">
+        <h3 className="font-black text-lg text-slate-800 dark:text-zinc-100 flex items-center gap-2">
           <Settings className="text-accent" size={18} />
           SETTINGS
         </h3>
@@ -69,10 +69,10 @@ export default function CompressPDF() {
                 onClick={() => setLevel(opt.id)}
                 className={cn(
                   "w-full p-3 rounded-xl border-2 transition-all text-left",
-                  level === opt.id ? "border-accent bg-accent/5" : "border-slate-50 hover:bg-slate-50"
+                  level === opt.id ? "border-accent bg-accent/5" : "border-slate-50 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800"
                 )}
               >
-                <p className={cn("font-black text-xs", level === opt.id ? "text-slate-900" : "text-slate-700")}>{opt.title}</p>
+                <p className={cn("font-black text-xs", level === opt.id ? "text-slate-900 dark:text-zinc-100" : "text-slate-700 dark:text-zinc-300")}>{opt.title}</p>
                 <p className="text-[10px] text-slate-400 font-medium">{opt.desc}</p>
               </button>
             ))}

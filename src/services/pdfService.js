@@ -1,4 +1,8 @@
 import { PDFDocument } from 'pdf-lib';
+import * as pdfjsLib from 'pdfjs-dist';
+
+// Ensure pdfjs worker is set for rendering pages when running in browser
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 
 export const pdfService = {
   /**
@@ -16,7 +20,7 @@ export const pdfService = {
       copiedPages.forEach((page) => mergedPdf.addPage(page));
     }
     
-    return await mergedPdf.save();
+    return await mergedPdf.save({ useObjectStreams: true });
   },
 
   /**
@@ -35,22 +39,27 @@ export const pdfService = {
     const results = [];
 
     for (const r of ranges) {
-      const newPdf = await PDFDocument.create();
       let start, end;
-      
       if (r.includes('-')) {
         [start, end] = r.split('-').map(Number);
       } else {
         start = end = Number(r);
       }
 
-      if (isNaN(start) || isNaN(end) || start < 1 || end > totalPages) continue;
+      if (isNaN(start) || isNaN(end)) continue;
 
-      const pagesToCopy = Array.from({ length: end - start + 1 }, (_, i) => start + i - 1);
+      // Normalize range (handle cases like 5-3 or out of bounds)
+      const actualStart = Math.max(1, Math.min(start, end));
+      const actualEnd = Math.min(totalPages, Math.max(start, end));
+
+      if (actualStart > totalPages || actualEnd < 1) continue;
+
+      const newPdf = await PDFDocument.create();
+      const pagesToCopy = Array.from({ length: actualEnd - actualStart + 1 }, (_, i) => actualStart + i - 1);
       const copiedPages = await newPdf.copyPages(pdf, pagesToCopy);
       copiedPages.forEach((page) => newPdf.addPage(page));
       
-      results.push(await newPdf.save());
+      results.push(await newPdf.save({ useObjectStreams: true }));
     }
 
     return results;
@@ -71,7 +80,7 @@ export const pdfService = {
       page.setRotation({ type: 'degrees', angle: rotation });
     });
 
-    return await pdf.save();
+    return await pdf.save({ useObjectStreams: true });
   },
 
   /**
@@ -79,12 +88,66 @@ export const pdfService = {
    * Note: Real compression usually involves image re-encoding which is heavy.
    * This version will try to optimize the PDF structure.
    */
-  compressPDF: async (file) => {
+  compressPDF: async (file, level = 'recommended') => {
     const fileBytes = await file.arrayBuffer();
-    const pdf = await PDFDocument.load(fileBytes);
-    
-    // pdf-lib's save({ useObjectStreams: true }) provides some compression
-    return await pdf.save({ useObjectStreams: true });
+
+    // Map UI levels to JPEG quality (0-1)
+    const qualityMap = {
+      extreme: 0.45,
+      recommended: 0.7,
+      less: 0.95
+    };
+
+    const quality = qualityMap[level] ?? 0.7;
+
+    try {
+      // Load source PDF with pdfjs to render pages to canvas
+      const srcPdf = await pdfjsLib.getDocument({ data: fileBytes }).promise;
+      const pageCount = srcPdf.numPages;
+
+      const outPdf = await PDFDocument.create();
+
+      // Helper: convert dataURL to Uint8Array
+      const dataURLToUint8 = (dataURL) => {
+        const base64 = dataURL.split(',')[1];
+        const binary = atob(base64);
+        const len = binary.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+        return bytes;
+      };
+
+      // For each page, render to canvas, re-encode as JPEG with chosen quality,
+      // and embed into new PDF. This produces much better compression for image-heavy PDFs.
+      for (let p = 1; p <= pageCount; p++) {
+        const page = await srcPdf.getPage(p);
+        const viewport = page.getViewport({ scale: 1.5 });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        const ctx = canvas.getContext('2d');
+
+        await page.render({ canvasContext: ctx, viewport }).promise;
+
+        // Convert canvas to JPEG dataURL with quality
+        const dataURL = canvas.toDataURL('image/jpeg', quality);
+        const imgBytes = dataURLToUint8(dataURL);
+
+        const extImg = await outPdf.embedJpg(imgBytes);
+        const { width: imgW, height: imgH } = extImg.size();
+
+        const pagePdf = outPdf.addPage([imgW, imgH]);
+        pagePdf.drawImage(extImg, { x: 0, y: 0, width: imgW, height: imgH });
+      }
+
+      return await outPdf.save({ useObjectStreams: true });
+    } catch (err) {
+      // Fallback: if rendering fails (e.g., environment restrictions), return original PDF with object stream optimization
+      console.warn('compressPDF rendering fallback:', err);
+      const pdf = await PDFDocument.load(fileBytes);
+      return await pdf.save({ useObjectStreams: true });
+    }
   },
   
   /**
@@ -141,6 +204,6 @@ export const pdfService = {
       height: finalHeight,
     });
 
-    return await pdfDoc.save();
+    return await pdfDoc.save({ useObjectStreams: true });
   }
 };

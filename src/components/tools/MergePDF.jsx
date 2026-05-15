@@ -4,7 +4,7 @@ import { pdfService } from '../../services/pdfService';
 import { Merge, Download, Loader2, CheckCircle2, GripVertical, File, X, Settings } from 'lucide-react';
 import { motion, Reorder } from 'framer-motion';
 import { downloadFile } from '../../utils/download';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 function cn(...inputs) {
@@ -51,21 +51,21 @@ export default function MergePDF() {
                 <Reorder.Item 
                   key={`${file.name}-${index}`} 
                   value={file}
-                  className="bg-white border border-slate-100 p-4 rounded-2xl flex items-center gap-4 cursor-grab active:cursor-grabbing group shadow-sm hover:shadow-md transition-shadow"
+                  className="glass-card p-4 flex items-center gap-4 cursor-grab active:cursor-grabbing group"
                 >
                   <div className="text-slate-300 group-hover:text-accent transition-colors">
                     <GripVertical size={20} />
                   </div>
-                  <div className="w-10 h-10 bg-slate-50 text-slate-400 rounded-xl flex items-center justify-center">
+                  <div className="w-10 h-10 bg-slate-50 dark:bg-zinc-800/50 text-slate-400 rounded-xl flex items-center justify-center">
                     <File size={20} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-bold text-slate-800 truncate">{file.name}</p>
+                    <p className="font-bold text-slate-800 dark:text-zinc-100 truncate">{file.name}</p>
                     <p className="text-[10px] text-slate-400 font-medium">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                   </div>
                   <button 
                     onClick={() => setFiles(files.filter((_, i) => i !== index))}
-                    className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                    className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                   >
                     <X size={18} />
                   </button>
@@ -76,9 +76,9 @@ export default function MergePDF() {
         )}
       </div>
 
-      <div className="w-full lg:w-72 bg-white border border-slate-100 p-6 rounded-[1.5rem] space-y-6 animate-in fade-in slide-in-from-right-4 shadow-sm">
+      <div className="w-full lg:w-72 glass-card p-6 space-y-6 animate-in fade-in slide-in-from-right-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-black text-lg text-slate-800 flex items-center gap-2">
+          <h3 className="font-black text-lg text-slate-800 dark:text-zinc-100 flex items-center gap-2">
             <Settings className="text-accent" size={18} />
             SETTINGS
           </h3>
