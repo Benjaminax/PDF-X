@@ -216,6 +216,19 @@ export default function LaTeXToPDF() {
       });
     }
 
+    // Inline math using \( ... \)
+    content = content.replace(/\\\(([\s\S]+?)\\\)/g, (match, formula) => {
+      try {
+        return `<span class="inline-math" style="line-height: normal;">${katex.renderToString(formula, { displayMode: false, throwOnError: false, trust: true })}</span>`;
+      } catch (err) { return match; }
+    });
+
+    // Theorem and Proof environments
+    content = content.replace(/\\begin\{proof\}([\s\S]*?)\\end\{proof\}/g, (match, body) => {
+      const formattedBody = body.trim().split('\n\n').map(p => `<p class="mb-4 leading-normal text-justify">${p.trim()}</p>`).join('');
+      return `<div class="my-6 italic proof-block font-serif text-[11pt]" style="page-break-inside: avoid;"><span class="font-bold italic mr-2">Proof.</span><span class="proof-content">${formattedBody} <span class="float-right text-lg font-normal not-italic mt-[-1.5rem]">◻</span></span></div>`;
+    });
+
     content = content
       .replace(/\\section\*?\{(.*?)\}/g, '<h2 class="text-xl font-serif font-bold mt-8 mb-4 pb-1" style="color: #0f172a; border-bottom: 1px solid #e2e8f0;">$1</h2>')
       .replace(/\\subsection\*?\{(.*?)\}/g, '<h3 class="text-lg font-serif font-bold mt-6 mb-3" style="color: #0f172a;">$1</h3>')
