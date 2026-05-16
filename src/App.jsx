@@ -109,7 +109,7 @@ function BackgroundElements() {
 
 export default function App() {
   const [activeTool, setActiveTool] = useState(() => localStorage.getItem('activeTool') || 'dashboard');
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
+  const [isSidebarOpen, setSidebarOpen] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 1024);
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
 
   const mainHeaderRef = useRef(null);
@@ -139,6 +139,19 @@ export default function App() {
         <div className="grain-overlay" />
         <CustomCursor />
         <BackgroundElements />
+
+        {/* Mobile Sidebar Overlay */}
+        <AnimatePresence>
+          {isSidebarOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSidebarOpen(false)}
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 lg:hidden"
+            />
+          )}
+        </AnimatePresence>
 
         {/* Mobile Top Bar */}
         <div className="lg:hidden fixed top-0 left-0 right-0 h-16 glass z-30 flex items-center justify-between px-4">
@@ -213,7 +226,10 @@ export default function App() {
                   {group.items.map((tool) => (
                     <button
                       key={tool.id}
-                      onClick={() => setActiveTool(tool.id)}
+                      onClick={() => {
+                        setActiveTool(tool.id);
+                        if (window.innerWidth < 1024) setSidebarOpen(false);
+                      }}
                       className={cn(
                         "sidebar-item",
                         activeTool === tool.id 
