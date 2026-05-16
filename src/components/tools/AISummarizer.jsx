@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import FileDropzone from '../common/FileDropzone';
 import { ocrService } from '../../services/ocrService';
 import { aiService } from '../../services/aiService';

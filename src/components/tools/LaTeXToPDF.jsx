@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
-import html2pdf from 'html2pdf.js';
+
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { Sigma, Download, Loader2, CheckCircle2, Settings, Type, FileText, AlignLeft, List, Table } from 'lucide-react';
+import { Download, Loader2, CheckCircle2, FileText, AlignLeft, List, Table } from 'lucide-react';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -164,7 +164,7 @@ export default function LaTeXToPDF() {
           trust: true
         });
         return `<div class="my-10 py-4 math-block flex justify-center" style="line-height: normal; page-break-inside: avoid;">${rendered}</div>`;
-      } catch (e) { return match; }
+      } catch { return match; }
     });
 
     content = content.replace(/\\begin\{itemize\}(?:\[.*?\])?([\s\S]*?)\\end\{itemize\}/g, (match, body) => {
@@ -196,14 +196,14 @@ export default function LaTeXToPDF() {
     content = content.replace(/(?<!\\)\$\$([\s\S]*?)(?<!\\)\$\$/g, (match, formula) => {
       try {
         return `<div class="my-10 py-4 flex justify-center math-block" style="line-height: normal; page-break-inside: avoid;">${katex.renderToString(formula.trim(), { displayMode: true, throwOnError: false, trust: true })}</div>`;
-      } catch (e) { return match; }
+      } catch { return match; }
     });
 
     // Display math: \[ ... \], \begin{equation}, align, gather, etc.
     content = content.replace(/\\\[([\s\S]*?)\\\]/g, (match, formula) => {
       try {
         return `<div class="my-10 py-4 flex justify-center math-block" style="line-height: normal; page-break-inside: avoid;">${katex.renderToString(formula.trim(), { displayMode: true, throwOnError: false, trust: true })}</div>`;
-      } catch (e) { return match; }
+      } catch { return match; }
     });
 
     // Common display environments
@@ -215,7 +215,7 @@ export default function LaTeXToPDF() {
       content = content.replace(re, (m, body) => {
         try {
           return `<div class="my-10 py-4 flex justify-center math-block" style="page-break-inside: avoid;">${katex.renderToString(`\\begin{${cleanEnv}}${body.trim()}\\end{${cleanEnv}}`, { displayMode: true, throwOnError: false, trust: true })}</div>`;
-        } catch (e) { return m; }
+        } catch { return m; }
       });
     });
 
@@ -225,17 +225,17 @@ export default function LaTeXToPDF() {
         if (/^\s*\d+(\.\d+)?\s*$/.test(formula)) return match;
         try {
           return `<span class="inline-math" style="line-height: normal;">${katex.renderToString(formula, { displayMode: false, throwOnError: false, trust: true })}</span>`;
-        } catch (e) {
+        } catch {
           return match;
         }
       });
-    } catch (e) {
+    } catch {
       // Some JS environments may not support lookbehind; fallback to safer heuristic
-      content = content.replace(/\$([^\$\n]+?)\$/g, (match, formula) => {
+      content = content.replace(/\$([^$\n]+?)\$/g, (match, formula) => {
         if (/^\s*\d+(\.\d+)?\s*$/.test(formula)) return match;
         try {
           return `<span class="inline-math" style="line-height: normal;">${katex.renderToString(formula, { displayMode: false, throwOnError: false, trust: true })}</span>`;
-        } catch (err) { return match; }
+        } catch { return match; }
       });
     }
 
@@ -243,7 +243,7 @@ export default function LaTeXToPDF() {
     content = content.replace(/\\\(([\s\S]+?)\\\)/g, (match, formula) => {
       try {
         return `<span class="inline-math" style="line-height: normal;">${katex.renderToString(formula, { displayMode: false, throwOnError: false, trust: true })}</span>`;
-      } catch (err) { return match; }
+      } catch { return match; }
     });
 
     // Theorem and Proof environments
@@ -293,7 +293,7 @@ export default function LaTeXToPDF() {
           try {
             // Attempt to render the whole paragraph as a display math block
             return `<div class="my-10 py-4 flex justify-center math-block" style="line-height: normal; page-break-inside: avoid;">${katex.renderToString(trimmed.replace(/\n/g, ' '), { displayMode: true, throwOnError: false, trust: true })}</div>`;
-          } catch (e) {
+          } catch {
             // If it fails, just fall through to normal paragraph
           }
         }

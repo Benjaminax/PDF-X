@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import FileDropzone from '../common/FileDropzone';
 import { pdfService } from '../../services/pdfService';
-import { Zap, Download, Loader2, CheckCircle2, Settings } from 'lucide-react';
+import { Zap, Loader2, CheckCircle2, Settings } from 'lucide-react';
 import { downloadFile } from '../../utils/download';
 import JSZip from 'jszip';
 import clsx from 'clsx';

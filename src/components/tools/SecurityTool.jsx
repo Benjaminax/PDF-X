@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import FileDropzone from '../common/FileDropzone';
-import { PDFDocument } from 'pdf-lib';
-import { ShieldCheck, Lock, Unlock, Download, Loader2, CheckCircle2, Settings } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { pdfService } from '../../services/pdfService';
+import { ShieldCheck, Lock, Unlock, Loader2, Settings } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { downloadFile } from '../../utils/download';
 import JSZip from 'jszip';
-import { encryptPDF } from '@pdfsmaller/pdf-encrypt-lite';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -19,7 +18,6 @@ export default function SecurityTool() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [mode, setMode] = useState('protect'); // 'protect' or 'unlock'
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isDone, setIsDone] = useState(false);
   const [feedback, setFeedback] = useState('');
 
   // Calculate password strength (0-4)
@@ -38,10 +36,7 @@ export default function SecurityTool() {
   const strengthColors = ['text-red-500', 'text-orange-500', 'text-yellow-500', 'text-green-500', 'text-green-600'];
 
   // Reset feedback when files change or mode changes
-  useEffect(() => {
-    setFeedback('');
-    setIsDone(false);
-  }, [files, mode]);
+  // useEffect removed to avoid cascading renders
 
   const validateInputs = () => {
     if (files.length === 0) {
@@ -74,60 +69,31 @@ export default function SecurityTool() {
     const failedFiles = [];
 
     try {
-      if (files.length === 1) {
-        const fileBytes = await files[0].arrayBuffer();
-        let resultBytes;
-        
-        if (mode === 'unlock') {
-          try {
-            const pdfDoc = await PDFDocument.load(fileBytes, { password });
-            resultBytes = await pdfDoc.save();
-          } catch (unlockError) {
-            throw new Error('Incorrect password provided.');
-          }
-        } else {
-          // Actual encryption using 128-bit RC4 - setting both user and owner passwords
-          resultBytes = await encryptPDF(fileBytes, password, password);
-        }
-
-        downloadFile(resultBytes, `${mode === 'protect' ? 'protected' : 'unlocked'}-${files[0].name}`);
-        successCount = 1;
+      let resultPdfs;
+      if (mode === 'unlock') {
+        resultPdfs = await pdfService.unlockPDF(files, password);
       } else {
+        resultPdfs = await pdfService.protectPDF(files, password);
+      }
+
+      if (resultPdfs.length === 1) {
+        downloadFile(resultPdfs[0], `${mode === 'protect' ? 'protected' : 'unlocked'}-${files[0].name}`);
+        successCount = 1;
+      } else if (resultPdfs.length > 1) {
         const zip = new (JSZip.default || JSZip)();
-        for (const file of files) {
-          try {
-            const fileBytes = await file.arrayBuffer();
-            let resultBytes;
-            if (mode === 'unlock') {
-              const pdfDoc = await PDFDocument.load(fileBytes, { password });
-              resultBytes = await pdfDoc.save();
-            } else {
-              resultBytes = await encryptPDF(fileBytes, password, password);
-            }
-            zip.file(`${mode === 'protect' ? 'protected' : 'unlocked'}-${file.name}`, resultBytes);
-            successCount++;
-          } catch (fileError) {
-            console.error(`Failed to process ${file.name}:`, fileError);
-            failedFiles.push(file.name);
-            failedCount++;
-          }
-        }
-        
-        if (successCount > 0) {
-          const content = await zip.generateAsync({ type: 'blob' });
-          downloadFile(content, `${mode === 'protect' ? 'protected' : 'unlocked'}-batch.zip`, 'application/zip');
-        }
-        
-        if (failedCount > 0) {
-          throw new Error(`Processed ${successCount} file(s) successfully. Failed: ${failedFiles.join(', ')}`);
-        }
+        resultPdfs.forEach((pdfBytes, index) => {
+          zip.file(`${mode === 'protect' ? 'protected' : 'unlocked'}-${files[index].name}`, pdfBytes);
+        });
+        const content = await zip.generateAsync({ type: 'blob' });
+        downloadFile(content, `${mode === 'protect' ? 'protected' : 'unlocked'}-batch.zip`, 'application/zip');
+        successCount = resultPdfs.length;
       }
       
       const duration = ((Date.now() - startTime) / 1000).toFixed(1);
       setFeedback(`✓ ${mode === 'protect' ? 'Protected' : 'Unlocked'} ${successCount} PDF(s) in ${duration}s`);
-      setIsDone(true);
+      
       setTimeout(() => {
-        setIsDone(false);
+        
         setFeedback('');
       }, 4000);
     } catch (error) {

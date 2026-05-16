@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import FileDropzone from '../common/FileDropzone';
 import { ocrService } from '../../services/ocrService';
 import { jsPDF } from 'jspdf';
 import { PDFDocument } from 'pdf-lib';
-import { FileSearch, Copy, Download, Loader2, CheckCircle2, Archive, FileText, Settings } from 'lucide-react';
+import { FileSearch, Copy, Download, Loader2, CheckCircle2, FileText, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { downloadFile } from '../../utils/download';
 import JSZip from 'jszip';

@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import FileDropzone from '../common/FileDropzone';
 import { PDFDocument } from 'pdf-lib';
 import { pdfService } from '../../services/pdfService';
-import { FileImage, Download, Loader2, CheckCircle2, Archive, Files, Settings } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Download, Loader2, CheckCircle2, Archive, Files, Settings } from 'lucide-react';
+
 import { downloadFile } from '../../utils/download';
 import JSZip from 'jszip';
 import clsx from 'clsx';
@@ -24,11 +24,7 @@ export default function ImageToPDF() {
   const [margin, setMargin] = useState('none');
   const [mergeAll, setMergeAll] = useState(true);
 
-  const PAGE_SIZES = {
-    'A4': { width: 595, height: 842 },
-    'Letter': { width: 612, height: 792 },
-    'Fit': null
-  };
+
 
   const MARGINS = {
     'none': 0,

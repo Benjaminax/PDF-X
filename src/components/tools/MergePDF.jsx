@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import FileDropzone from '../common/FileDropzone';
 import { pdfService } from '../../services/pdfService';
-import { Merge, Download, Loader2, CheckCircle2, GripVertical, File, X, Settings } from 'lucide-react';
-import { motion, Reorder } from 'framer-motion';
+import { Merge, Loader2, CheckCircle2, GripVertical, File, X, Settings } from 'lucide-react';
+import { Reorder } from 'framer-motion';
 import { downloadFile } from '../../utils/download';
 import clsx from 'clsx';
 import { twMerge } from 'tailwind-merge';
