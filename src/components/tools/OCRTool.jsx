@@ -37,16 +37,30 @@ export default function OCRTool() {
         setProgress(`Processing ${file.name}...`);
         try {
           if (file.type === 'application/pdf') {
-            const pdfBytes = await file.arrayBuffer();
-            const pdfDoc = await PDFDocument.load(pdfBytes);
-            const pageCount = pdfDoc.getPageCount();
-
+            setProgress(`Checking for native text in ${file.name}...`);
             let docText = '';
-            for (let i = 1; i <= pageCount; i++) {
-              setProgress(`Scanning ${file.name} - Page ${i}/${pageCount}...`);
-              const imageBlob = await ocrService.pdfPageToImage(file, i);
-              const text = await ocrService.recognizeText(imageBlob);
-              docText += `--- Page ${i} ---\n\n${text}\n\n`;
+            let hasNativeText = false;
+            try {
+              const nativeText = await ocrService.extractTextFromPDF(file);
+              if (nativeText && nativeText.trim().replace(/\s+/g, '').length > 50) {
+                hasNativeText = true;
+                docText = nativeText;
+              }
+            } catch (nativeError) {
+              console.warn(`Native text extraction failed for ${file.name}, falling back to OCR:`, nativeError);
+            }
+
+            if (!hasNativeText) {
+              const pdfBytes = await file.arrayBuffer();
+              const pdfDoc = await PDFDocument.load(pdfBytes);
+              const pageCount = pdfDoc.getPageCount();
+
+              for (let i = 1; i <= pageCount; i++) {
+                setProgress(`Scanning ${file.name} - Page ${i}/${pageCount}...`);
+                const imageBlob = await ocrService.pdfPageToImage(file, i);
+                const text = await ocrService.recognizeText(imageBlob);
+                docText += `--- Page ${i} ---\n\n${text}\n\n`;
+              }
             }
 
             if (files.length === 1) {

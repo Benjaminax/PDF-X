@@ -32,7 +32,6 @@ import SplitPDF from './components/tools/SplitPDF';
 import ImageToPDF from './components/tools/ImageToPDF';
 import CompressPDF from './components/tools/CompressPDF';
 import OCRTool from './components/tools/OCRTool';
-import AISummarizer from './components/tools/AISummarizer';
 import SecurityTool from './components/tools/SecurityTool';
 import LaTeXToPDF from './components/tools/LaTeXToPDF';
 
@@ -66,7 +65,6 @@ const toolGroups = [
     group: 'AI & Advanced',
     items: [
       { id: 'ocr', name: 'OCR & Text', icon: FileSearch, color: 'text-rose-500', bgColor: 'bg-rose-50', desc: 'Convert scanned PDF and images into editable text documents.' },
-      { id: 'ai-tools', name: 'AI Summarizer', icon: Sparkles, color: 'text-indigo-500', bgColor: 'bg-indigo-50', desc: 'Get the key points from any PDF instantly using advanced AI.' },
     ]
   },
   {
@@ -87,7 +85,7 @@ function CustomCursor() {
       gsap.to(cursorRef.current, {
         x: e.clientX - 10,
         y: e.clientY - 10,
-        duration: 0.15,
+        duration: 0.25,
         ease: 'none',
       });
     };
@@ -108,7 +106,10 @@ function BackgroundElements() {
 }
 
 export default function App() {
-  const [activeTool, setActiveTool] = useState(() => localStorage.getItem('activeTool') || 'dashboard');
+  const [activeTool, setActiveTool] = useState(() => {
+    const saved = localStorage.getItem('activeTool');
+    return allTools.some(t => t.id === saved) ? saved : 'dashboard';
+  });
   const [isSidebarOpen, setSidebarOpen] = useState(() => typeof window !== 'undefined' && window.innerWidth >= 1024);
   const [isDarkMode, setIsDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
 
@@ -135,7 +136,7 @@ export default function App() {
 
   return (
     <LayoutGroup>
-      <div className="flex h-screen overflow-hidden text-slate-900 dark:text-zinc-100 transition-colors duration-300 bg-slate-50 dark:bg-black">
+      <div className="flex h-screen overflow-hidden text-slate-900 dark:text-zinc-100 transition-colors duration-250 bg-slate-50 dark:bg-black">
         <div className="grain-overlay" />
         <CustomCursor />
         <BackgroundElements />
@@ -176,15 +177,15 @@ export default function App() {
             width: isSidebarOpen ? 280 : 88,
             x: 0 
           }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          transition={{ duration: 0.25 }}
           className={cn(
-            "glass z-40 flex flex-col fixed lg:relative h-full transition-transform lg:translate-x-0 border-r border-white/20 dark:border-white/5 shadow-2xl",
+            "glass z-40 flex flex-col fixed lg:relative h-full transition-transform duration-250 lg:translate-x-0 border-r border-white/20 dark:border-white/5 shadow-2xl",
             !isSidebarOpen && "lg:translate-x-0 -translate-x-full lg:w-[88px]"
           )}
         >
           {/* Sidebar Header */}
           <div className={cn(
-            "p-6 flex items-center transition-all duration-300",
+            "p-6 flex items-center transition-all duration-250",
             isSidebarOpen ? "justify-between gap-3" : "flex-col justify-center gap-6"
           )}>
             <div className={cn("flex items-center gap-3 overflow-hidden", !isSidebarOpen && "flex-col")}>
@@ -206,7 +207,7 @@ export default function App() {
             </div>
             <button 
               onClick={() => setSidebarOpen(!isSidebarOpen)}
-              className="hidden lg:flex p-2 text-slate-400 hover:text-accent hover:bg-accent/5 rounded-xl transition-all"
+              className="hidden lg:flex p-2 text-slate-400 hover:text-accent hover:bg-accent/5 rounded-xl transition-all duration-250"
             >
               {isSidebarOpen ? <PanelLeftClose size={20} /> : <PanelLeftOpen size={20} />}
             </button>
@@ -247,7 +248,7 @@ export default function App() {
                       <tool.icon 
                         size={22} 
                         className={cn(
-                          "transition-transform duration-300",
+                          "transition-transform duration-250",
                           activeTool === tool.id ? "text-accent scale-110" : tool.color
                         )} 
                       />
@@ -296,11 +297,11 @@ export default function App() {
                 <button 
                   onClick={() => setActiveTool('dashboard')}
                   className={cn(
-                    "w-12 h-12 glass border border-white/20 rounded-xl flex items-center justify-center shadow-sm transition-all group",
+                    "w-12 h-12 glass border border-white/20 rounded-xl flex items-center justify-center shadow-sm transition-all duration-250 group",
                     allTools.find(t => t.id === activeTool)?.color
                   )}
                 >
-                  {React.createElement(allTools.find(t => t.id === activeTool)?.icon, { size: 24, className: "group-hover:scale-110 transition-transform" })}
+                  {React.createElement(allTools.find(t => t.id === activeTool)?.icon, { size: 24, className: "group-hover:scale-110 transition-transform duration-250" })}
                 </button>
               )}
               <div>
@@ -327,7 +328,7 @@ export default function App() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -30 }}
-              transition={{ duration: 0.4, type: 'spring', damping: 25 }}
+              transition={{ duration: 0.25 }}
               className="w-full pb-20"
             >
               {activeTool === 'dashboard' && <Dashboard onSelectTool={setActiveTool} />}
@@ -336,7 +337,6 @@ export default function App() {
               {activeTool === 'img-to-pdf' && <ImageToPDF />}
               {activeTool === 'compress' && <CompressPDF />}
               {activeTool === 'ocr' && <OCRTool />}
-              {activeTool === 'ai-tools' && <AISummarizer />}
               {activeTool === 'security' && <SecurityTool />}
               {activeTool === 'latex' && <LaTeXToPDF />}
             </motion.div>
@@ -364,24 +364,14 @@ function Dashboard({ onSelectTool }) {
 }
 
 function ToolCard({ tool, onSelectTool }) {
-  const cardRef = useRef(null);
-
-  useEffect(() => {
-    if (cardRef.current && window.innerWidth > 1024) {
-      return magneticEffect(cardRef.current, 0.15);
-    }
-  }, []);
-
   return (
     <motion.div
-      ref={cardRef}
-      whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       className="tool-card glass-card p-8 cursor-pointer group flex flex-col items-center text-center relative overflow-hidden"
       onClick={() => onSelectTool(tool.id)}
     >
       <div className={cn(
-        "w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-6 transition-all duration-500 group-hover:rotate-6 shadow-xl", 
+        "w-16 h-16 rounded-[1.5rem] flex items-center justify-center mb-6 transition-all duration-250 shadow-xl", 
         tool.bgColor,
         "dark:bg-zinc-900/80"
       )}>
@@ -396,11 +386,11 @@ function ToolCard({ tool, onSelectTool }) {
         {tool.desc}
       </p>
 
-      <div className="mt-6 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0 flex items-center gap-2 text-[10px] font-black text-accent uppercase tracking-widest">
+      <div className="mt-6 opacity-0 group-hover:opacity-100 transition-all duration-250 flex items-center gap-2 text-[10px] font-black text-accent uppercase tracking-widest">
         Access Tool <ChevronRight size={14} />
       </div>
 
-      <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+      <div className="absolute inset-0 bg-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-250 pointer-events-none" />
     </motion.div>
   );
 }

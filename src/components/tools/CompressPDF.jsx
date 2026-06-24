@@ -38,7 +38,7 @@ export default function CompressPDF() {
       setTimeout(() => setIsDone(false), 3000);
     } catch (error) {
       console.error('Compression failed:', error);
-      alert('Failed to compress PDF.');
+      alert(error.message || 'Failed to compress PDF.');
     } finally {
       setIsProcessing(false);
     }

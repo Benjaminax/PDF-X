@@ -2,6 +2,21 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+@theme {
+  --default-transition-duration: 250ms;
+  --transition-duration-50: 250ms;
+  --transition-duration-75: 250ms;
+  --transition-duration-100: 250ms;
+  --transition-duration-150: 250ms;
+  --transition-duration-200: 250ms;
+  --transition-duration-250: 250ms;
+  --transition-duration-300: 250ms;
+  --transition-duration-500: 250ms;
+  --transition-duration-700: 250ms;
+  --transition-duration-1000: 250ms;
+}
+
+
 :root {
   font-family: 'Inter Tight', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -22,7 +37,7 @@ body {
   display: flex;
   min-width: 320px;
   min-height: 100vh;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 250ms ease, color 250ms ease;
 }
 
 .dark body {
@@ -49,11 +64,11 @@ body {
   }
 
   .glass-card {
-    @apply bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-white/20 dark:border-white/5 rounded-3xl shadow-xl transition-all duration-300;
+    @apply bg-white/40 dark:bg-zinc-900/40 backdrop-blur-md border border-white/20 dark:border-white/5 rounded-3xl shadow-xl transition-all duration-250;
   }
 
   .sidebar-item {
-    @apply w-full flex items-center px-4 py-3 rounded-2xl transition-all duration-300 relative overflow-hidden;
+    @apply w-full flex items-center px-4 py-3 rounded-2xl transition-all duration-250 relative overflow-hidden;
   }
 
   .sidebar-item-active {
@@ -105,7 +120,7 @@ body {
   pointer-events: none;
   z-index: 9999;
   mix-blend-mode: difference;
-  transition: transform 0.1s ease;
+  transition: transform 250ms ease;
 }
 
 .bg-blur-element {

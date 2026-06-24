@@ -1,8 +1,9 @@
+console.log('API KEY:', import.meta.env.VITE_ILOVEPDF_PUBLIC_KEY);
 export const ilovepdfService = {
   getToken: async () => {
     const publicKey = import.meta.env.VITE_ILOVEPDF_PUBLIC_KEY;
-    if (!publicKey) {
-      throw new Error("Missing VITE_ILOVEPDF_PUBLIC_KEY in environment variables");
+    if (!publicKey || publicKey === "your_ilovepdf_public_key_here") {
+      throw new Error("Please configure a valid VITE_ILOVEPDF_PUBLIC_KEY in your .env file.");
     }
 
     const res = await fetch("https://api.ilovepdf.com/v1/auth", {

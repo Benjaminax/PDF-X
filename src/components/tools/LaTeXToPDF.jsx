@@ -404,15 +404,15 @@ export default function LaTeXToPDF() {
   };
 
   return (
-    <div className="flex flex-col xl:flex-row gap-8 items-start justify-center w-full max-w-[1600px] mx-auto px-4">
+    <div className="flex flex-col xl:flex-row gap-8 items-start justify-center w-full max-w-[1600px] mx-auto px-4 h-[calc(100vh-140px)]">
       <div 
         ref={measurerRef} 
         className="fixed -left-[9999px] top-0 w-[210mm] p-[1in] prose prose-slate invisible no-print"
         style={{ fontFamily: '"Times New Roman", Times, serif' }}
       />
-      <div className="w-full xl:w-[450px] space-y-4 shrink-0">
-        <div className="glass-card p-6">
-          <div className="flex items-center justify-between mb-4">
+      <div className="w-full xl:w-[450px] shrink-0 h-[500px] xl:h-full mb-8 xl:mb-0">
+        <div className="glass-card p-6 flex flex-col h-full">
+          <div className="flex items-center justify-between mb-4 shrink-0">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-500/10 text-blue-500 rounded-lg flex items-center justify-center">
                 <FileText size={18} />
@@ -423,10 +423,10 @@ export default function LaTeXToPDF() {
           <textarea
             value={latex}
             onChange={(e) => setLatex(e.target.value)}
-            className="w-full h-[700px] p-6 bg-slate-50/50 dark:bg-zinc-900/50 rounded-2xl border-2 border-transparent focus:border-accent outline-none font-mono text-xs leading-loose text-slate-700 dark:text-zinc-300 transition-all scrollbar-hide"
+            className="w-full flex-1 min-h-0 p-6 bg-slate-50/50 dark:bg-zinc-900/50 rounded-2xl border-2 border-transparent focus:border-accent outline-none font-mono text-xs leading-loose text-slate-700 dark:text-zinc-300 transition-all scrollbar-hide resize-none"
             placeholder="Write your LaTeX here..."
           />
-          <div className="mt-6 flex flex-wrap gap-2">
+          <div className="mt-6 flex flex-wrap gap-2 shrink-0">
             <div className="flex items-center gap-1 text-[9px] font-black text-slate-400 bg-slate-50 dark:bg-zinc-900/50 px-2 py-1 rounded-md uppercase">
               <AlignLeft size={10} /> Align
             </div>
@@ -439,8 +439,8 @@ export default function LaTeXToPDF() {
           </div>
         </div>
       </div>
-      <div className="flex-1 w-full flex flex-col items-center">
-        <div className="w-full flex items-center justify-between mb-4 px-2">
+      <div className="flex-1 w-full flex flex-col items-center h-full">
+        <div className="w-full flex items-center justify-between mb-4 px-2 shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-accent/20 flex items-center justify-center">
               <FileText className="text-accent" size={18} />
@@ -459,15 +459,15 @@ export default function LaTeXToPDF() {
             {isProcessing ? 'EXPORTING...' : isDone ? 'EXPORTED!' : 'DOWNLOAD PDF'}
           </button>
         </div>
-        <div className="w-full overflow-x-auto pb-24 scrollbar-hide">
+        <div className="w-full flex-1 overflow-auto pb-24 scrollbar-hide flex flex-col items-center">
           <div 
             ref={previewRef}
-            className="flex flex-col items-center gap-12 pages-container"
+            className="flex flex-col items-center gap-12 pages-container w-full"
           >
             {pages.map((pageHTML, index) => (
               <div 
                 key={index}
-                className="bg-white text-[#0f172a] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] w-[210mm] min-h-[297mm] p-[1in] box-border relative page-block"
+                className="bg-white text-[#0f172a] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.2)] w-[210mm] min-h-[297mm] p-[1in] box-border relative page-block shrink-0"
                 style={{ fontFamily: '"Times New Roman", Times, serif' }}
               >
                 <div className="absolute top-4 right-8 text-[9px] font-black text-slate-300 dark:text-zinc-500 uppercase tracking-widest no-print">

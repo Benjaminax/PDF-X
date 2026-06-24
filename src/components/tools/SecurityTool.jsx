@@ -177,7 +177,7 @@ export default function SecurityTool() {
               <div className="h-1.5 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
                 <div 
                   className={cn(
-                    "h-full transition-all duration-300",
+                    "h-full transition-all duration-250",
                     passwordStrength === 0 && "w-[25%] bg-red-500",
                     passwordStrength === 1 && "w-[40%] bg-orange-500",
                     passwordStrength === 2 && "w-[60%] bg-yellow-500",

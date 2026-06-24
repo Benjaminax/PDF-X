@@ -52,7 +52,7 @@ export default function SplitPDF() {
       }
     } catch (error) {
       console.error('Split failed:', error);
-      alert('Failed to split PDF. Please check the page range format.');
+      alert(error.message || 'Failed to split PDF. Please check the page range format.');
     } finally {
       setIsProcessing(false);
     }

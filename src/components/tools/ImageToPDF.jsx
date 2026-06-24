@@ -71,7 +71,7 @@ export default function ImageToPDF() {
       setTimeout(() => setIsDone(false), 3000);
     } catch (error) {
       console.error('Conversion failed:', error);
-      alert('Failed to convert images to PDF.');
+      alert(error.message || 'Failed to convert images to PDF.');
     } finally {
       setIsProcessing(false);
     }

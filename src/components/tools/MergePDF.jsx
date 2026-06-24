@@ -27,7 +27,7 @@ export default function MergePDF() {
       setTimeout(() => setIsDone(false), 3000);
     } catch (error) {
       console.error('Merge failed:', error);
-      alert('Failed to merge PDFs. Please try again.');
+      alert(error.message || 'Failed to merge PDFs. Please try again.');
     } finally {
       setIsProcessing(false);
     }
